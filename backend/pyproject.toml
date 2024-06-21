@@ -13,6 +13,7 @@ bs4 = "^0.0.2"
 omnitils = {git = "https://github.com/Investigamer/omnitils.git", tag = "1.2.1"}
 django = "^5.0.6"
 django-ninja = "^1.1.0"
+commitizen = "^3.27.0"
 
 [build-system]
 requires = ["poetry-core"]
