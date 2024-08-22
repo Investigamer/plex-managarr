@@ -12,20 +12,18 @@ import yarl
 from omnitils.fetch import request_header_default
 from omnitils.logs import logger
 
-# Local Imports
-from managarr._config import ENV
-
 """
 * TMDB API
 """
 
 
 def get_search(
-        url: yarl.URL | str,
-        query: dict,
-        sort_with: Callable = lambda k: k['release_date'][:4],
-        sort_reverse: bool = False,
-        header: Optional[dict] = None
+    token: str,
+    url: yarl.URL | str,
+    query: dict,
+    sort_with: Callable = lambda k: k['release_date'][:4],
+    sort_reverse: bool = False,
+    header: Optional[dict] = None
 ) -> list[dict]:
     """Return a list from an TMDB API search query."""
 
@@ -33,7 +31,7 @@ def get_search(
     header = header or request_header_default.copy()
     header.update({
         'accept': 'application/json',
-        'Authorization': f'Bearer {ENV.TMDB_TOKEN}'
+        'Authorization': f'Bearer {token}'
     })
 
     # Request the data
@@ -65,6 +63,7 @@ def get_search(
 
 def get_search_movie(
         query: dict,
+        token: str,
         sort_with: Callable = lambda k: k['release_date'][:4],
         sort_reverse: bool = False,
         header: Optional[dict] = None
@@ -73,10 +72,16 @@ def get_search_movie(
 
     # Define the query URL
     url = yarl.URL("https://api.themoviedb.org/3/search/movie").with_query(query)
-    return get_search(url, query, sort_with, sort_reverse, header)
+    return get_search(
+        token=token,
+        url=url,
+        query=query,
+        sort_with=sort_with,
+        sort_reverse=sort_reverse,
+        header=header)
 
 
-def get_movie_id(name: str, year: Optional[str | int] = None) -> int:
+def get_movie_id(token: str, name: str, year: Optional[str | int] = None) -> int:
     """Get the TMDB ID of a given movie."""
 
     # Define the query
@@ -87,6 +92,7 @@ def get_movie_id(name: str, year: Optional[str | int] = None) -> int:
     # Request movie results
     items: list[dict] = get_search_movie(
         query=query,
+        token=token,
         sort_with=lambda k: k['popularity'],
         sort_reverse=True)
 

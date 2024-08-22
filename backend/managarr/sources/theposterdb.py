@@ -12,7 +12,7 @@ from omnitils.logs import logger
 from omnitils.schema import Schema
 
 # Local Imports
-from managarr._schema import Movie, MovieCollection, TVShow, TVSeason, TVEpisode, MediaSources, MediaTypes
+from managarr.utils._schema import Movie, MovieCollection, TVShow, TVSeason, TVEpisode, MediaSources, MediaTypes
 from managarr.sources.themoviedb import get_movie_id
 
 """
@@ -35,7 +35,7 @@ class BasePoster(Schema):
 """
 
 
-def get_tv_show(show: BasePoster, seasons: list[TVSeason] = None) -> TVShow:
+def get_tv_show(tmdb_token: str, show: BasePoster, seasons: list[TVSeason] = None) -> TVShow:
     """Format tv show data."""
     if seasons is None:
         seasons = []
@@ -54,7 +54,7 @@ def get_tv_show(show: BasePoster, seasons: list[TVSeason] = None) -> TVShow:
         seasons=seasons,
         year=year,
         source=show.source,
-        id_tmdb=get_movie_id(title) if show.id_tmdb is None else show.id_tmdb
+        id_tmdb=get_movie_id(tmdb_token, title) if show.id_tmdb is None else show.id_tmdb
     )
 
 
@@ -78,7 +78,7 @@ def get_tv_season(season: BasePoster, episodes: list[TVEpisode] = None) -> TVSea
 
 def get_tv_episode(episode: BasePoster) -> TVEpisode:
     """Format tv episode data."""
-    # Todo: Not yet implemented on TMDB
+    # Todo: Not yet implemented on ThePosterDB
     return TVEpisode(
         number=1,
         url_title_card=episode.url_poster,
@@ -86,7 +86,7 @@ def get_tv_episode(episode: BasePoster) -> TVEpisode:
     )
 
 
-def get_movie(movie: BasePoster) -> Movie:
+def get_movie(tmdb_token: str, movie: BasePoster) -> Movie:
     """Format movie data."""
 
     # Get title and year
@@ -102,7 +102,7 @@ def get_movie(movie: BasePoster) -> Movie:
         title=title,
         url_poster=movie.url_poster,
         year=year,
-        id_tmdb=get_movie_id(title, year),
+        id_tmdb=get_movie_id(tmdb_token, title, year),
         source=movie.source)
 
 
@@ -132,8 +132,9 @@ class PosterDBPage:
         'Show': MediaTypes.TVShow,
     }
 
-    def __init__(self, soup: BeautifulSoup):
+    def __init__(self, tmdb_token: str, soup: BeautifulSoup):
         self.soup = soup
+        self.tmdb_token = tmdb_token
         self.main_set: Optional[BasePoster] = None
         self.posters = self.get_posters()
 
@@ -183,7 +184,9 @@ class PosterDBPage:
 
     def get_movies(self) -> list[Movie]:
         """Returns a list of Movie objects formatted from BasePoster objects."""
-        movie_list: list[Movie] = [get_movie(n) for n in self.posters if n.media_type == MediaTypes.Movie]
+        movie_list: list[Movie] = [
+            get_movie(self.tmdb_token, n) for n in self.posters
+            if n.media_type == MediaTypes.Movie]
         with suppress(KeyError, TypeError, ValueError):
             movie_list = sorted(movie_list, key=lambda x: x.year)
         return movie_list
@@ -199,7 +202,7 @@ class PosterDBPage:
         """Check whether this is a Movie collection or a TV Show, then build and return the appropriate object."""
         if self.main_set is not None:
             if self.main_set.media_type == MediaTypes.TVShow:
-                return get_tv_show(self.main_set, self.get_seasons())
+                return get_tv_show(self.tmdb_token, self.main_set, self.get_seasons())
             if self.main_set.media_type == MediaTypes.MovieCollection:
                 return get_movie_collection(self.main_set, self.get_movies())
         return logger.error('No main collection or show poster was found on this page!')

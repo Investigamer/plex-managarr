@@ -11,7 +11,7 @@ from omnitils.properties import default_prop
 
 # Local Imports
 from managarr.utils.scrape import parse_json_string
-from managarr._schema import Movie, MovieCollection, TVShow, TVSeason, TVEpisode, MediaTypes, MediaSources
+from managarr.utils._schema import Movie, MovieCollection, TVShow, TVSeason, TVEpisode, MediaTypes, MediaSources
 
 """
 * Types

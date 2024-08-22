@@ -9,10 +9,11 @@ from omnitils.logs import logger
 import yarl
 
 # Local Imports
+from managarr import settings
 import managarr.sources.mediux as Mediux
 import managarr.sources.themoviedb as MovieDB
 import managarr.sources.theposterdb as PosterDB
-from managarr._schema import MovieCollection, TVShow
+from managarr.utils._schema import MovieCollection, TVShow
 from managarr.utils.scrape import get_page_soup
 
 
@@ -31,7 +32,7 @@ def scrape_theposterdb(url: str | yarl.URL) -> Optional[MovieCollection | TVShow
     # Scrape a collection page
     if 'set' in url.parts:
         soup = get_page_soup(url)
-        return PosterDB.PosterDBPage(soup).get_collection()
+        return PosterDB.PosterDBPage(settings.ENV.get('TMDB_TOKEN', ''), soup).get_collection()
 
     # Unrecognized ThePosterDB url
     return logger.error('Unrecognized ThePosterDB URL provided!')

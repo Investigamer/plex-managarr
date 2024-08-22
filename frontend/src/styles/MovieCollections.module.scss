@@ -1,0 +1,11 @@
+.collection {
+  img {
+    box-sizing: border-box;
+    background: rgba(0,0,0,.6);
+    transition: transform 0.3s ease-in-out;
+    &:hover {
+      //transform: scale(1.06);
+      border: .2rem solid cornflowerblue;
+    }
+  }
+}

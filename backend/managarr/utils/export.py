@@ -3,22 +3,13 @@
 """
 # Standard Library Imports
 from pathlib import Path
-from time import perf_counter
-
-# Third Party Imports
-from omnitils.files import mkdir_full_perms
-from omnitils.logs import logger
 
 # Local Imports
 from managarr.utils._schema import MovieCollection, TVShow, TVEpisode
-from managarr.sources import identify_and_scrape
-
-"""
-* Scrape The Poster DB
-"""
 
 
 def export_movie_collection(
+    url: str,
     path: Path,
     collection: MovieCollection,
     short_name: bool = True
@@ -73,6 +64,7 @@ def export_movie_collection(
 
 
 def export_tv_show(
+    url: str,
     path: Path,
     show: TVShow
 ):
@@ -115,44 +107,3 @@ def export_tv_show(
     output = '\n'.join(['', metadata, *season_list, ''])
     with open(path_metadata, encoding='utf-8', mode='a') as f:
         f.write(output)
-
-
-"""
-* Launcher
-"""
-
-if __name__ == "__main__":
-
-    # Export directory
-    export_dir = Path.cwd() / 'export'
-    mkdir_full_perms(export_dir)
-
-    # Scrape The Poster DB
-    while True:
-
-        # Prompt the user for a URL
-        logger.success('Please provide a collection URL ...')
-        url = input()
-        logger.info('Processing your request ...')
-        start = perf_counter()
-
-        # Scrape from the appropriate source
-        _collection = identify_and_scrape(url)
-
-        # Movie collection
-        if isinstance(_collection, MovieCollection):
-            logger.info(f'Show processed: {_collection.title}')
-            export_movie_collection(
-                path=export_dir,
-                collection=_collection)
-
-        # TV Show
-        if isinstance(_collection, TVShow):
-            logger.info(f'Movie collection processed: {_collection.title}')
-            export_tv_show(
-                path=export_dir,
-                show=_collection)
-
-        # Onto the next one
-        elapsed = perf_counter() - start
-        logger.info(f'That took {elapsed:2f} seconds!')

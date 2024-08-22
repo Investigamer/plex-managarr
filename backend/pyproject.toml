@@ -4,17 +4,27 @@ version = "0.1.0"
 description = "A metadata and asset manager for Plex."
 authors = ["Chris <hexproofsystems@gmail.com>"]
 license = "MPL-2.0"
-readme = "README.md"
+readme = "../README.md"
+
+[[tool.poetry.packages]]
+include = "managarr"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 requests = "^2.32.3"
 bs4 = "^0.0.2"
-omnitils = {git = "https://github.com/Investigamer/omnitils.git", tag = "1.2.1"}
+omnitils = {git = "https://github.com/Investigamer/omnitils.git", tag = "1.2.3"}
 django = "^5.0.6"
 django-ninja = "^1.1.0"
 commitizen = "^3.27.0"
+plexapi = "^4.15.13"
+django-cors-headers = "^4.4.0"
+click = "^8.1.7"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.scripts]
+managarr = 'managarr.cli:ManagarrCLI'

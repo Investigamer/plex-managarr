@@ -9,8 +9,11 @@ from pathlib import Path
 from omnitils.files import load_data_file
 from omnitils.logs import logger as LOGR
 
+# Local Imports
+from managarr.sources import plex as Plex
+
 # Build paths using 'backend' directory as root
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_FILE = BASE_DIR / 'env.yml'
 ENV_FILE_DEFAULTS = BASE_DIR / 'env.default.yml'
 
@@ -24,6 +27,14 @@ except (OSError, FileNotFoundError, ValueError):
         LOGR.exception(e)
         LOGR.error("Couldn't initialize Django project.")
         sys.exit()
+
+# Setup plex server connection
+PlexConfig = ENV.get('PLEX', {})
+PLEX_API = Plex.get_server(
+    url=PlexConfig.get('HOST'),
+    token=PlexConfig.get('TOKEN'),
+    port=PlexConfig.get('PORT')
+)
 
 # SECURITY WARNING: Must be kept secret in production!
 SECRET_KEY = ENV.get('DJANGO_SECRET', 'my-django-secret')
@@ -43,9 +54,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'managarr'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -55,7 +68,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'api.urls'
+# CORS Support
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = ['http://localhost:*']
+
+ROOT_URLCONF = 'managarr.urls'
 
 TEMPLATES = [
     {
@@ -73,7 +90,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'api.wsgi.application'
+WSGI_APPLICATION = 'managarr.wsgi.application'
 
 
 # Database
